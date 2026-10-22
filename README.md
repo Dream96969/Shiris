@@ -8,7 +8,6 @@
 
 * **[Modrinth](https://modrinth.com/mod/shiris)** üzerinden indir
 * **[GitHub Issues](https://github.com/Dream96969/Shiris/issues)** üzerinden hata bildir
-* Shader pack bulmak için **[Modrinth Shaders](https://modrinth.com/shaders)** sayfasını ziyaret et
 
 ## Kurulum
 
@@ -17,18 +16,10 @@
 3. Shiris `.jar` dosyasını mods klasörüne koy
 4. Minecraft'ı başlat → Video Settings → Shader Packs
 
-## Özellikler
-
-* OptiFine shader pack'leriyle tam uyumluluk
-* Sodium ile birlikte yüksek performans
-* Fabric ve Quilt desteği
-* Minecraft 1.21.11 desteği
-
 ## Iris'ten Farkı
 
-* Shiris logosu ve marka kimliği
-* Mod ID: `shiris` (orijinal Iris ile aynı anda kullanılabilir)
-* Yazar: Dream96969
+* Iris gibi shaderpack açmak yerine gömülü bir pack çalıştırıyor.
+* Birden fazla pack için uyumlu olmak yerine tek packe odaklanan yapı.
 
 ## Bağımlılıklar
 
@@ -36,14 +27,6 @@
 |-----|------------|
 | [Fabric Loader](https://fabricmc.net) ≥ 0.12.3 | ✅ Zorunlu |
 | [Sodium](https://modrinth.com/mod/sodium) 0.8.x | ✅ Zorunlu |
-
-## Derleme
-
-```bash
-./gradlew :fabric:remapJar
-```
-
-Çıktı: `build/libs/shiris-*.jar`
 
 ## Lisans
 
