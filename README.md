@@ -14,7 +14,7 @@
 1. Install [Fabric Loader](https://fabricmc.net/use/)
 2. Download [Sodium](https://modrinth.com/mod/sodium) and place it in your `mods` folder
 3. Place the Shiris `.jar` file into your `mods` folder
-4. Launch Minecraft → **Video Settings** → **Shader Packs**
+4. There is no settings so you can just get in the game and play.
 
 ## Differences from Iris
 
