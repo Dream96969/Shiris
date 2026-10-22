@@ -36,10 +36,11 @@ import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.state.ShaderAttributeInputs;
 import net.irisshaders.iris.gl.texture.DepthBufferFormat;
 import net.irisshaders.iris.gl.texture.TextureType;
-import net.irisshaders.iris.gui.option.IrisVideoSettings;
+import net.irisshaders.iris.config.IrisVideoSettings;
 import net.irisshaders.iris.helpers.FakeChainedJsonException;
 import net.irisshaders.iris.helpers.OptionalBoolean;
 import net.irisshaders.iris.helpers.Tri;
+import net.irisshaders.iris.lights.LightSourceBuffer;
 import net.irisshaders.iris.mixin.GlStateManagerAccessor;
 import net.irisshaders.iris.mixin.LevelRendererAccessor;
 import net.irisshaders.iris.pathways.CenterDepthSampler;
@@ -91,6 +92,7 @@ import net.irisshaders.iris.targets.ClearPass;
 import net.irisshaders.iris.targets.ClearPassCreator;
 import net.irisshaders.iris.targets.RenderTargets;
 import net.irisshaders.iris.targets.backed.NativeImageBackedSingleColorTexture;
+import net.irisshaders.iris.uniforms.CameraUniforms;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.irisshaders.iris.uniforms.CommonUniforms;
 import net.irisshaders.iris.uniforms.FrameUpdateNotifier;
@@ -185,6 +187,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 	public boolean isBeforeTranslucent;
 	private boolean initializedBlockIds;
 	private ShaderStorageBufferHolder shaderStorageBufferHolder;
+	private final LightSourceBuffer lightSources;
 	private ShadowRenderTargets shadowRenderTargets;
 	private WorldRenderingPhase overridePhase = null;
 	private WorldRenderingPhase phase = WorldRenderingPhase.NONE;
@@ -253,6 +256,10 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 				IrisRenderSystem.bindBufferBase(GL43C.GL_SHADER_STORAGE_BUFFER, i, 0);
 			}
 		}
+
+		// HalilShaders: light list for colored block light (binding 7). Created after the SSBO bindings
+		// above are set up or cleared, so nothing unbinds it.
+		this.lightSources = new LightSourceBuffer();
 
 		this.customImages = new HashSet<>();
 		for (ImageInformation information : programSet.getPack().getIrisCustomImages()) {
@@ -938,6 +945,9 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		// Update custom uniforms
 		this.customUniforms.update();
 
+		// HalilShaders: refresh the light list before any pass that reads it.
+		lightSources.update(CameraUniforms.getUnshiftedCameraPosition());
+
 		RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
 
 		GpuTexture depthTexture = main.getDepthTexture();
@@ -1252,6 +1262,8 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		if (shaderStorageBufferHolder != null) {
 			shaderStorageBufferHolder.destroyBuffers();
 		}
+
+		lightSources.destroy();
 	}
 
 	@Override

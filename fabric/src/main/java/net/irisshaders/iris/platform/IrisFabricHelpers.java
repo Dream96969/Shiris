@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.lwjgl.system.Configuration;
 
 import java.nio.file.Path;
+import java.util.Optional;
 import java.text.ParseException;
 
 public class IrisFabricHelpers implements IrisPlatformHelpers {
@@ -46,6 +47,11 @@ public class IrisFabricHelpers implements IrisPlatformHelpers {
 	@Override
 	public Path getConfigDir() {
 		return FabricLoader.getInstance().getConfigDir();
+	}
+
+	@Override
+	public Optional<Path> findModResource(String relativePath) {
+		return FabricLoader.getInstance().getModContainer("iris").flatMap(container -> container.findPath(relativePath));
 	}
 
 	@Override

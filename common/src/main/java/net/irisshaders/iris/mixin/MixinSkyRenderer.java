@@ -68,6 +68,11 @@ public class MixinSkyRenderer {
 		setPhase(WorldRenderingPhase.VOID);
 	}
 
+	@Inject(method = "renderEndSky", at = @At(value = "HEAD"))
+	private void iris$setEndSkyRenderStage(CallbackInfo ci) {
+		setPhase(WorldRenderingPhase.SKY);
+	}
+
 	@Inject(method = "renderSunMoonAndStars", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;mulPose(Lorg/joml/Quaternionfc;)V", ordinal = 0, shift = At.Shift.AFTER))
 	private void iris$renderSky$tiltSun(PoseStack poseStack, float f, float g, float h, MoonPhase moonPhase, float i, float j, CallbackInfo ci) {
 		poseStack.mulPose(Axis.ZP.rotationDegrees(getSunPathRotation()));

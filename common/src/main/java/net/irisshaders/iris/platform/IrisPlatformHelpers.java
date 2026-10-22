@@ -9,6 +9,7 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.ServiceLoader;
 
 public interface IrisPlatformHelpers {
@@ -27,6 +28,13 @@ public interface IrisPlatformHelpers {
 	Path getGameDir();
 
 	Path getConfigDir();
+
+	/**
+	 * Resolves a file or directory shipped inside this mod (jar or dev resources directory).
+	 */
+	default Optional<Path> findModResource(String relativePath) {
+		return Optional.empty();
+	}
 
 	int compareVersions(String currentVersion, String semanticVersion) throws Exception;
 

@@ -6,7 +6,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.irisshaders.iris.Iris;
-import net.irisshaders.iris.gui.option.IrisVideoSettings;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
 import net.minecraft.resources.Identifier;
 
@@ -29,10 +28,6 @@ public class IrisConfig {
 	private final Path propertiesPath;
 	private final Path excludedPath;
 	/**
-	 * The path to the current shaderpack. Null if the internal shaderpack is being used.
-	 */
-	private String shaderPackName;
-	/**
 	 * Whether or not shaders are used for rendering. False to disable all shader-based rendering, true to enable it.
 	 */
 	private boolean enableShaders;
@@ -54,7 +49,6 @@ public class IrisConfig {
 	private boolean disableUpdateMessage;
 
 	public IrisConfig(Path propertiesPath, Path excluded) {
-		shaderPackName = null;
 		enableShaders = true;
 		allowUnknownShaders = false;
 		enableDebugOptions = false;
@@ -82,26 +76,6 @@ public class IrisConfig {
 	 */
 	public boolean isInternal() {
 		return false;
-	}
-
-	/**
-	 * Returns the name of the current shaderpack
-	 *
-	 * @return Returns the current shaderpack name - if internal shaders are being used it returns "(internal)"
-	 */
-	public Optional<String> getShaderPackName() {
-		return Optional.ofNullable(shaderPackName);
-	}
-
-	/**
-	 * Sets the name of the current shaderpack
-	 */
-	public void setShaderPackName(String name) {
-		if (name == null || name.equals("(internal)") || name.isEmpty()) {
-			this.shaderPackName = null;
-		} else {
-			this.shaderPackName = name;
-		}
 	}
 
 	/**
@@ -169,7 +143,6 @@ public class IrisConfig {
 			properties.load(is);
 		}
 
-		shaderPackName = properties.getProperty("shaderPack");
 		enableShaders = !"false".equals(properties.getProperty("enableShaders"));
 		allowUnknownShaders = "true".equals(properties.getProperty("allowUnknownShaders"));
 		enableDebugOptions = "true".equals(properties.getProperty("enableDebugOptions"));
@@ -183,12 +156,6 @@ public class IrisConfig {
 			IrisVideoSettings.colorSpace = ColorSpace.SRGB;
 			save();
 		}
-
-		if (shaderPackName != null) {
-			if (shaderPackName.equals("(internal)") || shaderPackName.isEmpty()) {
-				shaderPackName = null;
-			}
-		}
 	}
 
 	/**
@@ -198,7 +165,6 @@ public class IrisConfig {
 	 */
 	public void save() throws IOException {
 		Properties properties = new Properties();
-		properties.setProperty("shaderPack", getShaderPackName().orElse(""));
 		properties.setProperty("enableShaders", enableShaders ? "true" : "false");
 		properties.setProperty("allowUnknownShaders", allowUnknownShaders ? "true" : "false");
 		properties.setProperty("enableDebugOptions", enableDebugOptions ? "true" : "false");

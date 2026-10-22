@@ -101,7 +101,6 @@
     "entity_render_context.ItemStackStateLayerMixin",
     "fabulous.MixinDisableFabulousGraphics",
     "gui.MixinGui",
-    "gui.MixinVideoSettingsScreen",
     "rendertype.RenderTypeAccessor",
     "shadows.MixinBeaconRenderer",
     "shadows.MixinLevelRenderer",

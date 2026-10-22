@@ -16,8 +16,6 @@ import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.gl.buffer.BuiltShaderStorageInfo;
 import net.irisshaders.iris.gl.buffer.ShaderStorageInfo;
 import net.irisshaders.iris.gl.texture.TextureDefinition;
-import net.irisshaders.iris.gui.FeatureMissingErrorScreen;
-import net.irisshaders.iris.gui.screen.ShaderPackScreen;
 import net.irisshaders.iris.helpers.StringPair;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
 import net.irisshaders.iris.shaderpack.error.RusticError;
@@ -225,14 +223,7 @@ public class ShaderPack {
 		List<String> invalidFeatureFlags = invalidFlagList.stream().map(FeatureFlags::getHumanReadableName).toList();
 
 		if (!invalidFeatureFlags.isEmpty()) {
-			if (Minecraft.getInstance().screen instanceof ShaderPackScreen) {
-				MutableComponent component = Component.translatable("iris.unsupported.pack.description", FeatureFlags.getInvalidStatus(invalidFlagList), invalidFeatureFlags.stream()
-					.collect(Collectors.joining(", ", ": ", ".")));
-				if (SystemUtils.IS_OS_MAC) {
-					component = component.append(Component.translatable("iris.unsupported.pack.macos"));
-				}
-				Minecraft.getInstance().setScreen(new FeatureMissingErrorScreen(Minecraft.getInstance().screen, Component.translatable("iris.unsupported.pack"), component));
-			}
+			net.irisshaders.iris.Iris.logger.error("The built-in shaderpack requires features this system does not support ({}): {}", String.valueOf(FeatureFlags.getInvalidStatus(invalidFlagList)), String.join(", ", invalidFeatureFlags));
 			IrisApi.getInstance().getConfig().setShadersEnabledAndApply(false);
 		}
 		List<StringPair> newEnvDefines = new ArrayList<>(environmentDefines);

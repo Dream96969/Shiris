@@ -3,7 +3,7 @@ package net.irisshaders.iris.uniforms;
 import it.unimi.dsi.fastutil.objects.Object2IntFunction;
 import net.irisshaders.iris.gl.uniform.UniformHolder;
 import net.irisshaders.iris.gl.uniform.UniformUpdateFrequency;
-import net.irisshaders.iris.gui.option.IrisVideoSettings;
+import net.irisshaders.iris.config.IrisVideoSettings;
 import net.irisshaders.iris.helpers.JomlConversions;
 import net.irisshaders.iris.mixin.GameRendererAccessor;
 import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;

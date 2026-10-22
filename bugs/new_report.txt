@@ -1,0 +1,16 @@
+Hatalar:
+
+1-Fazla parlaklık:
+ Güneş tam tepede iken image1'deki gibi beyaz bloklar göründüğü gibi
+ fazla parlak oluyor.
+2-Uzaktaki nesnelerde renkli aydınlatma:
+ Gayet yakın bile olsa 1-2 chunk uzakta nesneler renkli aydınlatma
+ veya parlama yaymıyor. image2'de olduğu gibi uzaktaki parlayan
+ nesneler vanilla ışık sistemine geçiyor.
+3-Aşırı agrasif LOD:
+ 10 civarı bloktan daha uzak neseneler image3'teki gibi piksellere
+ dönüşüyor.Referans için image3'teki pikseller ortalama 1 piksel boyundaki zemine koyulan çiçek.
+4-Dış hatlarda hesap hataları:
+ image4'teki gibi nesneler uzaklaştıkça dış hatları küçülüyor ama
+ bir noktadan sonra büyümeye başlıyor.Büyük ihtimal eksilere
+ inmekte ama elimizde kanıtı yok.

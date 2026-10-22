@@ -66,7 +66,7 @@ public class IrisPipelines {
 		assignToMain(RenderPipelines.BEACON_BEAM_OPAQUE, p -> ShaderKey.BEACON);
 		assignToMain(RenderPipelines.BEACON_BEAM_TRANSLUCENT, p -> ShaderKey.BEACON);
 		assignToMain(RenderPipelines.END_PORTAL, p -> ShaderKey.BLOCK_ENTITY);
-		assignToMain(RenderPipelines.END_SKY, p -> ShaderKey.SKY_TEXTURED);
+		assignToMain(RenderPipelines.END_SKY, p -> ShaderKey.SKY_TEXTURED_COLOR);
 		assignToMain(RenderPipelines.WEATHER_DEPTH_WRITE, p -> ShaderKey.WEATHER);
 		assignToMain(RenderPipelines.WEATHER_NO_DEPTH_WRITE, p -> ShaderKey.WEATHER);
 		assignToMain(RenderPipelines.TEXT, p -> getText(p));
