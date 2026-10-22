@@ -6,7 +6,7 @@
 
 ## Links
 
-- Download via **[Modrinth](https://modrinth.com/mod/shiris)**
+- Download via **[Modrinth](https://modrinth.com/mod/shiris)**(might not work the review doesn't ended yet)
 - Report issues via **[GitHub Issues](https://github.com/Dream96969/Shiris/issues)**
 
 ## Installation
