@@ -1,37 +1,37 @@
-![Shiris: Iris tabanlı özelleştirilmiş shader modu](docs/shiris_logo.png)
+![Shiris: Iris-based customized shader mod](docs/shiris_logo.png)
 
 # Shiris
 
-**Shiris**, [Iris Shaders](https://github.com/IrisShaders/Iris) projesinin bir fork'udur.Gömülü bir shader kullanır, Fabric tabanlı modern bir shader modudur.
+**Shiris** is a fork of the [Iris Shaders](https://github.com/IrisShaders/Iris) project. It uses an embedded shader and is a modern, Fabric-based shader mod.
 
-## Bağlantılar
+## Links
 
-* **[Modrinth](https://modrinth.com/mod/shiris)** üzerinden indir
-* **[GitHub Issues](https://github.com/Dream96969/Shiris/issues)** üzerinden hata bildir
+- Download via **[Modrinth](https://modrinth.com/mod/shiris)**
+- Report issues via **[GitHub Issues](https://github.com/Dream96969/Shiris/issues)**
 
-## Kurulum
+## Installation
 
-1. [Fabric Loader](https://fabricmc.net/use/) yükle
-2. [Sodium](https://modrinth.com/mod/sodium) indir ve mods klasörüne koy
-3. Shiris `.jar` dosyasını mods klasörüne koy
-4. Minecraft'ı başlat → Video Settings → Shader Packs
+1. Install [Fabric Loader](https://fabricmc.net/use/)
+2. Download [Sodium](https://modrinth.com/mod/sodium) and place it in your `mods` folder
+3. Place the Shiris `.jar` file into your `mods` folder
+4. Launch Minecraft → **Video Settings** → **Shader Packs**
 
-## Iris'ten Farkı
+## Differences from Iris
 
-* Iris gibi shaderpack açmak yerine gömülü bir pack çalıştırıyor.
-* Birden fazla pack için uyumlu olmak yerine tek packe odaklanan yapı.
+- Instead of opening external shader packs like Iris, it runs a built-in, embedded pack.
+- Designed with a focused structure around a single pack rather than ensuring compatibility across multiple packs.
 
-## Bağımlılıklar
+## Dependencies
 
-| Mod | Zorunlu mu? |
-|-----|------------|
-| [Fabric Loader](https://fabricmc.net) ≥ 0.12.3 | ✅ Zorunlu |
-| [Sodium](https://modrinth.com/mod/sodium) 0.8.x | ✅ Zorunlu |
+| Mod | Required? |
+| --- | :---: |
+| [Fabric Loader](https://fabricmc.net) ≥ 0.12.3 | ✅ Required |
+| [Sodium](https://modrinth.com/mod/sodium) 0.8.x | ✅ Required |
 
-## Lisans
+## License
 
-Bu proje **GNU LGPLv3** lisansı altında dağıtılmaktadır. Orijinal Iris projesinin bir fork'udur.
+This project is distributed under the **GNU LGPLv3** license. It is a fork of the original Iris project.
 
-`glsl-transformer` bağımlılığı GNU AGPLv3 lisansı kullanmaktadır.
+The `glsl-transformer` dependency is licensed under GNU AGPLv3.
 
-Orijinal proje: [IrisShaders/Iris](https://github.com/IrisShaders/Iris) — Teşekkürler!
+Original project: [IrisShaders/Iris](https://github.com/IrisShaders/Iris) — Thank you!
