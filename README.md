@@ -2,7 +2,7 @@
 
 # Shiris
 
-**Shiris**, [Iris Shaders](https://github.com/IrisShaders/Iris) projesinin bir fork'udur. OptiFine shader pack'leriyle uyumlu, Fabric tabanlı modern bir shader modudur.
+**Shiris**, [Iris Shaders](https://github.com/IrisShaders/Iris) projesinin bir fork'udur.Gömülü bir shader kullanır, Fabric tabanlı modern bir shader modudur.
 
 ## Bağlantılar
 
