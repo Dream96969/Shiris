@@ -1,5 +1,4 @@
-# This workflow will build a Java project with Brachyra
-# For more information see: docs/development/brachyura.md
+# Build and validate the Fabric distribution with the Gradle version pinned by gradle-wrapper.properties.
 
 name: Java CI with Gradle
 
@@ -20,7 +19,6 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
-          gradle-version: current
 
       - name: Build with Gradle
         run: ./gradlew build

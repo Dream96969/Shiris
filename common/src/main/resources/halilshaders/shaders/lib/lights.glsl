@@ -30,7 +30,9 @@ struct HsLight {
 
 // Sizes below must match LightSourceBuffer.java (MAX_LIGHTS, MAX_CANDIDATES, CELL_SIZE,
 // CELL_STRIDE_INTS). The grid size is not a constant: it is read from hsGridDims.
-const int HS_HALO_CAPACITY = 64;
+// Halos are rendered at half resolution. Thirty-two well-ranked lights are enough to cover the
+// visible lights while cutting the worst-case halo loop and the per-frame upload in half.
+const int HS_HALO_CAPACITY = 32;
 const int HS_CANDIDATE_CAPACITY = 32768;
 const int HS_GRID_STRIDE = 16;
 const float HS_CELL_SIZE = 16.0;
@@ -45,7 +47,7 @@ layout(std430, binding = 7) readonly buffer HsLightBuffer {
 	ivec4 hsLightHeader;  // x = number of lights in the halo list
 	ivec4 hsGridDims;     // xyz = grid size in cells; all zero until the first grid is built
 	vec4 hsGridOrigin;    // xyz = corner of the grid's first cell, minus camera, in world axes
-	HsLight hsLights[64];          // halo list (HS_HALO_CAPACITY), positions relative to the camera
+	HsLight hsLights[32];          // halo list (HS_HALO_CAPACITY), positions relative to the camera
 	HsLight hsCandidates[32768];   // every known light (HS_CANDIDATE_CAPACITY), positions relative to the grid corner
 	int hsGrid[];                  // cells of 16 ints each: [count, light indices...]
 };
@@ -150,6 +152,10 @@ vec4 coloredLightAt(vec3 viewPos, vec3 viewNormal, float blockLevel, float detai
 //  - lights right next to the camera fade out instead of flooding the view;
 //  - the sum is soft-limited, so overlapping lights add up to a bright glow, never to a white blowout.
 vec3 lightHalos(vec3 viewDir, float sceneDist) {
+	if (hsLightHeader.x <= 0) {
+		return vec3(0.0);
+	}
+
 	vec3 worldDir = viewToFeetDirection(viewDir);
 
 	vec3 sum = vec3(0.0);

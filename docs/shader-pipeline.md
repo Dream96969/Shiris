@@ -8,11 +8,16 @@ Pack files: `common/src/main/resources/halilshaders/shaders/`
 
 ## Pass order
 
-1. **gbuffers_*** (terrain, entities, textured_lit): write geometry data (below). No lighting.
-2. **deferred**: the only place directional light is applied, and the only place light
+1. **shadow** (`shadow.vsh`, `shadow.fsh`): draws the scene from the sun (or moon) into the shadow map.
+   Only `deferred` reads the map. See "Light visibility (shadows)".
+2. **gbuffers_*** (terrain, entities, textured_lit): write geometry data (below). No lighting.
+3. **deferred**: the only place directional light is applied, and the only place light
    visibility (shadows) is computed. Writes visibility to `colortex3`.
-3. **composite**: effects that add or remove light-colored detail (edge glow), then fog.
-4. **final**: grading only (pastel). Works on the finished picture, reads no geometry data.
+4. **composite** (`composite.vsh`, `composite.fsh`): light halos, drawn at half the width and height
+   (`scale.composite=0.5`) into the lower left quarter of `colortex4`. See "Light halos".
+5. **composite1** (`composite1.vsh`, `composite1.fsh`): effects that add or remove light-colored
+   detail (edge glow), adds the halos from `colortex4`, then fog.
+6. **final**: grading only (pastel). Works on the finished picture, reads no geometry data.
 
 ## Buffers
 
@@ -22,6 +27,7 @@ Pack files: `common/src/main/resources/halilshaders/shaders/`
 | colortex1 | view-space normal * 0.5 + 0.5 | | | sky light level 0..1 |
 | colortex2 | vanilla lightmap color | | | 1 = an opaque gbuffer program wrote here (clears to 0) |
 | colortex3 | block light level 0..1 | edge glow allowed (1/0) | sun visibility 0..1 | block light visibility 0..1 |
+| colortex4 | light halos (already scaled for the time of day), half size, lower left quarter only | | | |
 
 - `colortex3` clears to 0, so a pixel no gbuffer program wrote to may not glow.
 - Gbuffer programs write `b = 1` and `a = 1` (unshadowed). `deferred.fsh` replaces them.
@@ -32,21 +38,49 @@ Pack files: `common/src/main/resources/halilshaders/shaders/`
 
 ## Light visibility (shadows)
 
-- Computed once, in `lib/lighting.glsl`: `sunVisibility()` and `blockLightVisibility()`. Today both
-  return 1.0. Phase 7 fills in the first, Phase 8 the second.
-- Value is continuous 0..1 (1 = fully lit) and does not include N.L.
+- Computed once, in `lib/lighting.glsl`: `sunVisibility()` (the sun and moon shadow map, Phase 7,
+  done) and `blockLightVisibility()` (still returns 1.0; Phase 8 fills it in).
+- Value is continuous 0..1 (1 = fully lit) and has no smooth N.L term. The one exception is a
+  shortcut: a surface turned clearly away from the light (`N.L < -0.02`) returns 0 without reading the
+  map, which is what the map would say anyway.
 - Consumers use `colortex3.b` and `colortex3.a`. Nothing outside `deferred.fsh` samples the
   shadow map.
+- **The map.** `shadow.vsh`/`shadow.fsh` draw terrain, entities and block entities (and the player,
+  `shadowPlayer=true`) from the shadow light. Size, distance, nearest filtering and the sun's tilt
+  are `const` lines in `lib/settings.glsl` that the game itself reads (`shadowMapResolution`,
+  `shadowDistance`, `shadowtex1Nearest`, `sunPathRotation`); they must stay plain `const type name =
+  value;` lines. `shadowtex1` holds opaque depth only, so glass and water cast no shadow yet.
+- **Distortion.** `lib/shadow_distort.glsl` stretches the middle of the map so texels near the player
+  are small. `shadow.vsh` and the lookup in `lib/shadows.glsl` both use it, and must always agree.
+- **The lookup** (`sunShadowVisibility`): move the surface along its normal by a number of texels
+  (against acne), compare depth on a 12-sample rotated disk (soft edge of a fixed width in blocks),
+  fade out at the edge of the map. The depth range constant in `shadows.glsl` must match the shadow
+  camera's near and far planes (Iris default -100.05 and 156).
+- **What deferred does with it** (not part of the visibility): the value fades to 1 as the light sinks
+  to the horizon (`SHADOW_HORIZON_*`), the lookup is skipped where the surface gets no sky light, and
+  the shadow removes the sun's share of the light: weighted by sky exposure squared and by the sky
+  share of the light (block light is not shadowed by the sun), scaled for moon and rain, as a
+  multiplier `SHADOW_COLOR` on the lit color. Shadows only ever remove light.
+- **Feet space needs the whole matrix.** View space to feet space is
+  `viewToFeetPosition()` in `lib/viewmatrix.glsl`, the full inverse including translation. View
+  bobbing while walking lives in that translation; using only the 3x3 part put surfaces a few
+  tenths of a block off and whole scenes into shadow while walking. Directions use
+  `viewToFeetDirection()`.
+- Hand pixels have squeezed depth (see below), so their shadow lookup is at the wrong place; they
+  are lit like the spot at the camera.
 
 ## Sky and fog (atmosphere)
 
 - `lib/atmosphere.glsl` is the only place that decides sky and fog color: `atmosphereColor(viewDir)`
-  for the sky dome (`gbuffers_skybasic`) and `fogColorAt(viewDir)` for terrain fog (`composite`).
-  Both use the same function, so far terrain fades into the sky behind it without a seam.
+  for the sky dome (`gbuffers_skybasic`) and `fogColorAt(viewDir)` for terrain fog. Both use the same
+  per-pixel function (`atmosphereColorFrom`), so far terrain fades into the sky behind it without a
+  seam. `composite1.vsh` works out the per-frame values once (`atmosphereUp`, `atmosphereSunDir`,
+  `atmosphereBiome`, `atmosphereGlow`, `fogSpecialAmount`) and `composite1.fsh` calls
+  `fogColorFrom` with them; the sky dome calls the wrappers that work them out themselves.
 - The base is the game's `fogColor` (horizon) and `skyColor` (zenith); these are already biome, time,
   weather, dimension and underwater aware. The pack adds a biome tint (smoothed `hsWarmth` and
   `hsHumidity` custom uniforms from `shaders.properties`) and a sun glow near the horizon.
-- How much fog there is (`envFog`, `rdFog`) is decided in `composite.fsh`; the atmosphere only gives
+- How much fog there is (`envFog`, `rdFog`) is decided in `composite1.fsh`; the atmosphere only gives
   its color. Underwater, in lava, and under blindness or darkness the game's fog color is used as is.
 - The file declares its own uniforms. A program that includes it must not declare `fogColor`,
   `skyColor`, `upPosition`, `sunPosition`, `rainStrength`, `isEyeInWater`, `blindness`,
@@ -71,10 +105,10 @@ Pack files: `common/src/main/resources/halilshaders/shaders/`
     reads only the surface's own cell, so a torch 100 blocks away still colors the wall next to it.
     Choosing lights per surface, not per camera, is the point: the old "32 most influential to the
     camera" list ran out in cave areas and far lights fell back to vanilla.
-  - a **halo list** of the 64 lights most influential to the camera, used by `lightHalos`, because
+  - a **halo list** of the 32 lights most influential to the camera, used by `lightHalos`, because
     halos are drawn along view rays and not on surfaces.
 - Layout (std430): `ivec4 header` (x = halo count), `ivec4 gridDims` (grid size in cells, x y z),
-  `vec4 gridOrigin` (grid corner minus camera), `Light haloLights[64]`, `Light candidates[32768]`,
+  `vec4 gridOrigin` (grid corner minus camera), `Light haloLights[32]`, `Light candidates[32768]`,
   then a runtime-sized `int grid[]` (per cell: count, then indices into `candidates`; cell index =
   `(x * dimsY + y) * dimsZ + z`). `Light` is `{ vec4 posRadius; vec4 colorIntensity; }`. `posRadius.xyz`
   is the light center minus a reference point, in world axes (not view space): the camera for the halo
@@ -104,6 +138,25 @@ Pack files: `common/src/main/resources/halilshaders/shaders/`
 - Two passes read the buffer: `deferred` (colored light on surfaces, from the grid) and `composite`
   (light halos, `lightHalos` in `lights.glsl`, from the halo list). Both are `#version 430`, and so
   are their vertex shaders.
+
+## Light halos (half size)
+
+- A halo is the soft glow around a light. Finding it loops over up to 32 lights per pixel, the most
+  expensive per-pixel work in the pack, so it is drawn at half the width and height: the `composite`
+  program (`composite.vsh`, `composite.fsh`) with `scale.composite=0.5` in `shaders.properties`.
+- It writes `colortex4` (`DRAWBUFFERS:4`, format `R11F_G11F_B10F`, set by the `colortex4Format` line in
+  `lib/settings.glsl`), already multiplied by its strength for the time of day. The picture sits in
+  the lower left quarter of the buffer; texture coordinates in that pass still run 0..1 over it.
+- `composite1.fsh` reads it with bilinear filtering at `texcoord * 0.5`, clamped half a half-size
+  pixel in from the edges of the quarter so the unused rest of the buffer is never blended in, and
+  adds it to the scene before fog, where the full-size loop used to be.
+- Each half-size pixel looks at the nearest depth of the four full-size pixels under it. That keeps
+  a halo from showing through the edge of something in front of it, and trims halos at silhouettes
+  by up to a pixel.
+- Both stages skip the work when the halo strength for the time of day is below 0.002 (the sum is at
+  most 1, so it cannot show in an 8 bit color).
+- `viewWidth` and `viewHeight` stay the full window size in the half-size pass; the sampling in both
+  programs depends on that.
 
 ## First-person hand
 
@@ -143,7 +196,7 @@ Pack files: `common/src/main/resources/halilshaders/shaders/`
   (`lodPixelsPerBlock` in `lib/lod.glsl`; `tan(fov / 2)` is `gbufferProjectionInverse[1][1]`). It
   follows the window height and the field of view, so a small window loses detail sooner. Settings
   are in the "Level of detail" part of `lib/settings.glsl`; `LOD_ENABLED = false` turns it all off.
-- **Edge glow** (`composite.fsh`): below `LOD_EDGE_MIN_PIXELS_PER_BLOCK` there is no glow and nothing
+- **Edge glow** (`composite1.fsh`): below `LOD_EDGE_MIN_PIXELS_PER_BLOCK` there is no glow and nothing
   is read (lines a pixel or two apart would merge into bands); it is at full strength from
   `LOD_EDGE_FULL_PIXELS_PER_BLOCK`. The thin-step filter (steps of 1-2 texels) is skipped where such
   a step is shorter than `LOD_THIN_STEP_MIN_PIXELS`.
@@ -170,11 +223,16 @@ Pack files: `common/src/main/resources/halilshaders/shaders/`
   walk, out-of-grid buffer reads, which must never run). Cheap choices between two values are
   written with `step`, `mix` and `max`, for example `fitToRange` is `c * rcp(max(peak, 1.0))`.
 - Anything that depends only on uniforms is computed in the vertex shader and passed as a `flat`
-  varying, not per pixel. `final.vsh` does this for the pastel grade: the amount for the time of day
-  and the two palette tints (each one is an OKLab conversion with pow calls). OKLab is in
-  `lib/oklab.glsl`, shared by `final.vsh` and `final.fsh`.
-- Work that two parts of one pass both need is done once: `composite.fsh` computes the view position,
+  varying, not per pixel. `final.vsh` does this for the pastel grade (the amount for the time of day
+  and the two palette tints, each an OKLab conversion with pow calls). `deferred.vsh` does it for the
+  shadow light's direction, the shadow fade, daylight and the shadow strength (moon and rain
+  applied). `composite1.vsh` does it for the atmosphere values, the light direction and strength for
+  the edge glow, the halo strength, and the fog ranges. OKLab is in `lib/oklab.glsl`, shared by
+  `final.vsh` and `final.fsh`.
+- Work that two parts of one pass both need is done once: `composite1.fsh` computes the view position,
   distance and direction once for halos and fog.
+- Shadow lookups are skipped where they cannot change the result: no sky light, light at the
+  horizon, surfaces turned away from the light.
 
 ## Glass and water glint
 
@@ -185,8 +243,9 @@ Pack files: `common/src/main/resources/halilshaders/shaders/`
   `block.properties`, because cutout glass never draws its transparent texels.
 - The glint is computed before the transparent-texel discard in `gbuffer_forward_lit.glsl`, so a pane
   shows the sheen across its whole surface.
-- `glint.glsl` and `lights.glsl` both declare `gbufferModelViewInverse`: never include both in one
-  program. Sun shadows (Phase 7) will multiply the glint by the stored sun visibility.
+- `glint.glsl`, `lights.glsl` and `shadows.glsl` all need `gbufferModelViewInverse`. It is declared
+  once, in `lib/viewmatrix.glsl` (with an include guard), so they can be included together. Never
+  declare that uniform yourself. Sun shadows will multiply the glint by the stored sun visibility.
 
 ## Rules for features
 
@@ -194,12 +253,12 @@ Pack files: `common/src/main/resources/halilshaders/shaders/`
    directional term (`direct`).
 2. **Anything that adds light-colored detail after deferred (edge glow, specular, god rays) must
    multiply by the stored visibility.** Otherwise it shows up inside shadows. Edge glow does this
-   through `sunBudget` and `blockBudget` in `composite.fsh`.
+   through `sunBudget` and `blockBudget` in `composite1.fsh`.
 3. **Surface orientation and visibility are separate factors**: `facing * exposure * visibility`.
    Do not fold N.L into the visibility, or it is counted twice.
 4. **Geometry detection (edges) reads geometry buffers only**, never the shadow map. Shadow acne
    or filtering noise cannot then create fake edges.
-5. **Order matters in `composite`**: glow, then fog, so distant glow fades with the haze. Grading
+5. **Order matters in `composite1`**: glow, then fog, so distant glow fades with the haze. Grading
    stays in `final` so it treats glow and shadows alike.
 6. **Mask what must not glow in the gbuffer stage** (`colortex3.g`), not in composite.
 7. **Never write a second sky or fog color.** Anything that colors the sky or the distance (clouds,

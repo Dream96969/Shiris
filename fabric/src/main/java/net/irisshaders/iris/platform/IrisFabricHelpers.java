@@ -19,6 +19,10 @@ import java.util.Optional;
 import java.text.ParseException;
 
 public class IrisFabricHelpers implements IrisPlatformHelpers {
+	// The mod's id in fabric.mod.json. The project was renamed, so this is no longer "iris"; looking the
+	// mod up under the old id finds nothing and crashes the game while it starts.
+	private static final String MOD_ID = "shiris";
+
 	static {
 		if (System.getProperty("user.home").contains("ims") && FabricLoader.getInstance().isDevelopmentEnvironment()) {
 			//Configuration.GLFW_LIBRARY_NAME.set("/usr/lib/libglfw.so");
@@ -31,7 +35,7 @@ public class IrisFabricHelpers implements IrisPlatformHelpers {
 
 	@Override
 	public String getVersion() {
-		return FabricLoader.getInstance().getModContainer("iris").get().getMetadata().getVersion().getFriendlyString();
+		return FabricLoader.getInstance().getModContainer(MOD_ID).get().getMetadata().getVersion().getFriendlyString();
 	}
 
 	@Override
@@ -51,7 +55,7 @@ public class IrisFabricHelpers implements IrisPlatformHelpers {
 
 	@Override
 	public Optional<Path> findModResource(String relativePath) {
-		return FabricLoader.getInstance().getModContainer("iris").flatMap(container -> container.findPath(relativePath));
+		return FabricLoader.getInstance().getModContainer(MOD_ID).flatMap(container -> container.findPath(relativePath));
 	}
 
 	@Override

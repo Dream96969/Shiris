@@ -27,18 +27,18 @@ float hsHash13(vec3 p) {
 // viewPos: view-space position of the surface. normal: unit view-space normal.
 // skyLevel: 0..1 sky exposure. Returns rgb = glint color, a = glint opacity.
 vec4 sunGlint(vec3 viewPos, vec3 normal, float skyLevel) {
-	vec3 toLight = normalize(shadowLightPosition);
-	vec3 toEye = normalize(-viewPos);
+	vec3 toLight = fastNormalize(shadowLightPosition);
+	vec3 toEye = fastNormalize(-viewPos);
 
 	// Sun by day, moon by night, like everywhere else in the pack. shadowLightPosition points at
 	// whichever is up; the strength fades from sunlight to moonlight as the sun sets.
-	vec3 sunDir = normalize(sunPosition);
-	float sunElevation = dot(sunDir, normalize(upPosition));
+	vec3 sunDir = atmosphereSunDir();
+	float sunElevation = dot(sunDir, atmosphereUp());
 
 	// Sheen for surfaces facing the light, mirror-angle highlight on top.
 	float facing = smoothstep(GLINT_FACING_MIN, 1.0, dot(normal, toLight));
-	float nh = max(dot(normal, normalize(toLight + toEye)), 0.0);
-	float mirror = pow(nh, GLINT_SHARPNESS);
+	float nh = max(dot(normal, fastNormalize(toLight + toEye)), 0.0);
+	float mirror = fastPow(nh, GLINT_SHARPNESS);
 	float base = facing * (GLINT_SHEEN + GLINT_SPECULAR * mirror);
 
 	// Sparkles. The world is cut into small cells; a share of them twinkle. Rounding with + 0.5 puts
@@ -47,7 +47,9 @@ vec4 sunGlint(vec3 viewPos, vec3 normal, float skyLevel) {
 	vec3 cell = floor(world * GLINT_SPARKLE_DENSITY + 0.5);
 	float h = hsHash13(cell);
 	float twinkle = step(1.0 - GLINT_SPARKLE_AMOUNT, h) * (0.5 + 0.5 * sin(frameTimeCounter * GLINT_TWINKLE_SPEED + h * 40.0));
-	float sparkle = twinkle * facing * smoothstep(0.2, 0.9, pow(nh, 6.0));
+	// nh to the 6th power by multiplication: exact, and cheaper than a general pow.
+	float nh2 = nh * nh;
+	float sparkle = twinkle * facing * smoothstep(0.2, 0.9, nh2 * nh2 * nh2);
 
 	// Needs a light to reflect: open sky and no rain. The light is the sun, or the dimmer moon.
 	float exposure = skyLevel * skyLevel * (1.0 - rainStrength);

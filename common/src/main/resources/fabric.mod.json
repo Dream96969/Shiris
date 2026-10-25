@@ -3,14 +3,14 @@
   "id": "shiris",
   "version": "${version}",
   "name": "Shiris",
-  "description": "A modern shaders mod for Minecraft intended to be compatible with existing OptiFine shader packs",
+  "description": "A Fabric shader mod for Minecraft with a built-in, performance-focused shader",
   "authors": [
-    "Iris fork - Dreampro96969"
+    "Iris fork - Dream96969"
   ],
   "contact": {
-    "homepage": "https://github.com/Dreampro96969/Shiris",
-    "sources": "https://github.com/Dreampro96969/Shiris",
-    "issues": "https://github.com/Dreampro96969/Shiris/issues"
+    "homepage": "https://github.com/Dream96969/Shiris",
+    "sources": "https://github.com/Dream96969/Shiris",
+    "issues": "https://github.com/Dream96969/Shiris/issues"
   },
   "license": "LGPL-3.0-only",
   "icon": "assets/iris/textures/gui/iris-logo.png",
@@ -27,7 +27,7 @@
   ],
   "accessWidener": "iris.accesswidener",
   "depends": {
-    "fabricloader": ">=0.12.3",
+    "fabricloader": ">=0.18.1",
 
     "sodium": [
       "0.8.x"

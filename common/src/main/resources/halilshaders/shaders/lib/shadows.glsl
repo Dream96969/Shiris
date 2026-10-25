@@ -16,6 +16,8 @@
 //     share of points that are lit is the result. The disk is turned a different amount in every
 //     pixel (interleaved gradient noise), which trades banding for fine grain. The disk is a
 //     fraction of a block wide, so shadow edges are soft but close to the object that casts them.
+//     Four taps on the rim of the disk are read first; when they all agree the pixel is not near an
+//     edge and the rest of the taps are skipped (SHADOW_ADAPTIVE).
 //  4. Near the edge of the map, and beyond its depth range, the result fades to 1 (no shadow).
 //
 // shadowtex1 holds the depth of opaque geometry only. Glass and water therefore do not cast shadows
@@ -102,6 +104,22 @@ float sunShadowVisibility(vec3 viewPos, vec3 viewNormal, float nDotL) {
 	// Rotate the disk differently in every pixel.
 	float angle = hsInterleavedGradientNoise(gl_FragCoord.xy) * 6.2831853;
 	vec2 dir = vec2(cos(angle), sin(angle));
+
+	// Most pixels are far from any shadow edge: all of the disk is lit, or all of it is shadowed. Four
+	// taps on the rim of the disk tell those pixels apart from edge pixels, and only edge pixels pay for
+	// the full filter. The rim is where an edge shows up first, so a pixel whose four rim taps agree
+	// has nothing to blur. This stays a branch: it skips most of the map reads of the pixel.
+	if (SHADOW_ADAPTIVE) {
+		vec2 rim = dir * (0.9 * radiusUV);
+		vec2 rimPerp = vec2(-rim.y, rim.x);
+		float probe = step(depth, textureLod(shadowtex1, uv + rim, 0.0).r)
+		            + step(depth, textureLod(shadowtex1, uv - rim, 0.0).r)
+		            + step(depth, textureLod(shadowtex1, uv + rimPerp, 0.0).r)
+		            + step(depth, textureLod(shadowtex1, uv - rimPerp, 0.0).r);
+		if (probe < 0.5 || probe > 3.5) {
+			return mix(1.0, probe * 0.25, fade);
+		}
+	}
 
 	float lit = 0.0;
 	for (int i = 0; i < SHADOW_SAMPLES; i++) {

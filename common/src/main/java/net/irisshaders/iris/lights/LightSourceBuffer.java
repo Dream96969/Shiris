@@ -77,9 +77,9 @@ import java.util.function.Predicate;
  *   0        ivec4 header;           // x = number of lights in the halo list
  *   16       ivec4 gridDims;         // xyz = grid size in cells (x, y, z)
  *   32       vec4  gridOrigin;       // xyz = grid corner minus camera, world axes
- *   48       Light haloLights[64];   // the halo list, positions relative to the camera
- *   2096     Light candidates[32768];// every known light, positions relative to the grid corner
- *   1050672  int   grid[];           // gridDims.x * gridDims.y * gridDims.z cells of 16 ints:
+ *   48       Light haloLights[32];   // the halo list, positions relative to the camera
+ *   1072     Light candidates[32768];// every known light, positions relative to the grid corner
+ *   1049648  int   grid[];           // gridDims.x * gridDims.y * gridDims.z cells of 16 ints:
  *                                    // [count, index0 .. index14]; cell = (x * dimsY + y) * dimsZ + z
  * where Light is { vec4 posRadius; vec4 colorIntensity; } (32 bytes):
  *   posRadius      = xyz: light center minus the reference point (world axes), w: reach in blocks
@@ -95,8 +95,8 @@ import java.util.function.Predicate;
 public final class LightSourceBuffer {
 	/** SSBO binding index. Packs in this project must not use this index for their own buffers. */
 	public static final int BINDING = 7;
-	/** Length of the halo list. */
-	public static final int MAX_LIGHTS = 64;
+	/** Length of the halo list. Halos are rendered at half resolution, so 32 ranked lights are sufficient. */
+	public static final int MAX_LIGHTS = 32;
 
 	/** Cells are at least as wide as the largest reach (15), so a light touches at most 2 cells per axis. */
 	private static final int CELL_SIZE = 16;

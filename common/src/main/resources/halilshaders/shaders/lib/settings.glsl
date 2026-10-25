@@ -182,6 +182,13 @@ const float HALO_NEAR_FADE_END      = 3.0;
 // Strength by full daylight, as a fraction of HALO_STRENGTH. Halos belong to the dark.
 const float HALO_DAY_FACTOR         = 0.15;
 
+// The half size halo picture (composite.fsh) is kept in colortex4. This line is read by the game, not by
+// the pack: it picks the buffer's format. Eleven and ten bit floats take half the memory of the usual
+// 16 bit float format and are plenty for a soft glow, which has no alpha. The first line is only a
+// placeholder so that the second still compiles as GLSL; the game reads the name from the text.
+const int R11F_G11F_B10F = 0;
+const int colortex4Format = R11F_G11F_B10F;
+
 // ---- Phase 6c: sun glint on glass and water (lib/glint.glsl, gbuffers_water) ----
 //
 // Surfaces that face the sun get a soft sheen, brighter at the mirror angle, with a few sparkles.
@@ -229,6 +236,12 @@ const int   shadowMapResolution = 2048;
 // are no shadows (they fade out over the last part). Smaller = sharper shadows near the player.
 const float shadowDistance      = 128.0;
 
+// How far from the player terrain is drawn into the shadow map, as a multiple of shadowDistance. The
+// map only covers shadowDistance blocks around the player, so drawing farther terrain is wasted work.
+// Without this line the game draws everything out to the normal render distance. 1.0 = exactly the
+// area the map covers; raise it a little if shadows from far tall objects (mountains) are missing.
+const float shadowDistanceRenderMul = 1.0;
+
 // Read the shadow map with nearest filtering. The pack filters it itself, so this must stay true.
 const bool  shadowtex1Nearest   = true;
 
@@ -264,6 +277,11 @@ const float SHADOW_HORIZON_END   = 0.22;
 const float SHADOW_SOFTNESS          = 0.20;
 const float SHADOW_BLUR_MAX_TEXELS   = 4.0;
 const int   SHADOW_SAMPLES           = 12;
+
+// Read four taps on the rim of the filter disk first, and skip the full filter when they all agree
+// (the pixel is not near a shadow edge). Same picture, a fraction of the map reads. Turn off only to
+// compare against the full filter.
+const bool  SHADOW_ADAPTIVE          = true;
 
 // The map is stretched so that texels near the player are smaller. 0.0 = even, 0.85 = strong. Used by
 // shadow.vsh and the lookup, so both always agree.

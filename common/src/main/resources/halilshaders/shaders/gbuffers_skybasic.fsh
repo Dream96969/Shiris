@@ -12,6 +12,11 @@ uniform int renderStage;
 
 in vec4 glcolor;
 
+flat in vec3 atmoUp;
+flat in vec3 atmoSunDir;
+flat in vec3 atmoBiome;
+flat in vec3 atmoGlow;
+
 void main() {
 	// Stars and the sunrise/sunset glow keep their vanilla vertex colors.
 	if (renderStage == MC_RENDER_STAGE_STARS || renderStage == MC_RENDER_STAGE_SUNSET) {
@@ -25,5 +30,5 @@ void main() {
 	vec4 p = gbufferProjectionInverse * vec4(uv * 2.0 - 1.0, 1.0, 1.0);
 	vec3 viewDir = normalize(p.xyz / p.w);
 
-	gl_FragData[0] = vec4(atmosphereColor(viewDir), 1.0);
+	gl_FragData[0] = vec4(atmosphereColorFrom(viewDir, atmoUp, atmoSunDir, atmoBiome, atmoGlow), 1.0);
 }

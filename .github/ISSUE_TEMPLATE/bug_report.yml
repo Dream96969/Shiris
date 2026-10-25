@@ -7,7 +7,7 @@ body:
       value: |
         Thanks for taking the time to fill out this bug report!
         
-        Before continuing to make the issue, please make sure there are no similar issues on [the issue tracker](https://github.com/IrisShaders/Iris/issues). If there are, consider contributing your information in there instead!
+        Before continuing to make the issue, please make sure there are no similar issues on [the issue tracker](https://github.com/Dream96969/Shiris/issues). If there are, consider contributing your information in there instead!
   - type: textarea
     id: what-happened
     attributes:
@@ -35,15 +35,23 @@ body:
     attributes:
       label: Minecraft Version
       description: What version of Minecraft are you running? If you do not know what version you are using, look in the bottom left corner of the main menu in game.
-      placeholder: ex. Minecraft 1.16.5
+      placeholder: ex. Minecraft 1.21.11
     validations:
       required: true
   - type: input
-    id: iris-version
+    id: shiris-version
     attributes:
-      label: Iris Version
-      description: What version of Iris are you running? Every part is important! If you do not know what version you are using, look at the file name in your "mods" folder.
-      placeholder: ex. iris-mc1.17-1.1.3.jar
+      label: Shiris Version
+      description: What version of Shiris are you running? Every part is important! If you do not know what version you are using, look at the file name in your "mods" folder.
+      placeholder: ex. shiris-1.0.0.jar
+    validations:
+      required: true
+  - type: input
+    id: sodium-version
+    attributes:
+      label: Sodium Version
+      description: What version of Sodium are you running? Shiris needs Sodium. Look at the file name in your "mods" folder.
+      placeholder: ex. sodium-fabric-0.8.14-beta.1+mc1.21.11.jar
     validations:
       required: true
   - type: input

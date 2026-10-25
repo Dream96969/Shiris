@@ -382,6 +382,13 @@ public class ShadowRenderer {
 			return;
 		}
 
+		// A dimension without sky light (the Nether, the End) has no sun or moon to cast shadows, and the
+		// pack's lighting only looks shadows up on surfaces that get sky light. Drawing the map there
+		// would be wasted work.
+		if (!getLevel().dimensionType().hasSkyLight()) {
+			return;
+		}
+
 		GpuSampler theSampler = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.NEAREST, FilterMode.NEAREST, true);
 		levelRenderState.cameraRenderState.blockPos = renderState.blockPos;
 		levelRenderState.cameraRenderState.pos = renderState.pos;
